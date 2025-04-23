@@ -171,6 +171,59 @@ public class RMIT_15_Puzzle_Solver_Astar {
         }
     }
 
+    class BSTPriorityQueue {
+        static class Node {
+            State state;
+            Node left, right;
+    
+            Node(State state) {
+                this.state = state;
+            }
+        }
+    
+        private Node root;
+    
+        public void add(State state) {
+            root = insert(root, state);
+        }
+    
+        private Node insert(Node node, State state) {
+            if (node == null) return new Node(state);
+    
+            if (state.compareTo(node.state) < 0) {
+                node.left = insert(node.left, state);
+            } else {
+                node.right = insert(node.right, state);
+            }
+            return node;
+        }
+    
+        public boolean isEmpty() {
+            return root == null;
+        }
+    
+        public State poll() {
+            if (root == null) return null;
+    
+            Node[] result = extractMin(root, null);
+            root = result[1];
+            return result[0].state;
+        }
+    
+        // Returns [minNode, newSubtreeRoot]
+        private Node[] extractMin(Node node, Node parent) {
+            if (node.left == null) {
+                if (parent == null) {
+                    return new Node[] { node, node.right };
+                } else {
+                    parent.left = node.right;
+                    return new Node[] { node, root };
+                }
+            }
+            return extractMin(node.left, node);
+        }
+    }
+
     static class State implements Comparable<State> {
         int emptyRow, emptyCol;
         int g;
@@ -312,7 +365,8 @@ public class RMIT_15_Puzzle_Solver_Astar {
             if (emptyRow != -1) break;
         }
 
-        BinaryHeapPriorityQueue queue = new BinaryHeapPriorityQueue(10000);
+        // BinaryHeapPriorityQueue queue = new BinaryHeapPriorityQueue(10000);
+        BSTPriorityQueue queue = new BSTPriorityQueue();
         MyHashSet visited = new MyHashSet();
 
         State initial = new State(emptyRow, emptyCol, 0, "", puzzle);
@@ -370,7 +424,7 @@ public class RMIT_15_Puzzle_Solver_Astar {
         };
 
         try {
-            String solution = solver.solve(puzzle_1);
+            String solution = solver.solve(puzzle);
             System.out.println("Solution: " + solution);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
