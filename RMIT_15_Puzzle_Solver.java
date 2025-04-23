@@ -711,7 +711,10 @@ public class RMIT_15_Puzzle_Solver {
         int[][] hardPuzzle = { /* ... */ };
         int[][] unsolvablePuzzle = { /* ... */ };
          examplePuzzle = new int[][] {
-                { 1,  2,  3,  4 }, { 5,  6,  7,  8 }, { 9, 10, 11, 12 }, {13,  0, 14, 15 }
+            {1, 6, 2, 0},
+            {9, 5, 4, 3},
+            {13, 11, 7, 8},
+            {14, 10, 15, 12}
         };
          samplePuzzle = new int[][] {
                 { 1,  2,  3,  4 }, { 5,  6,  0,  8 }, { 9, 10,  7, 12 }, {13, 14, 11, 15 }

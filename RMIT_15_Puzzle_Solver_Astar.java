@@ -353,9 +353,9 @@ public class RMIT_15_Puzzle_Solver_Astar {
     }
 
     public static void main(String[] args) {
-        RMIT_15_Puzzle_Solver solver = new RMIT_15_Puzzle_Solver();
+        RMIT_15_Puzzle_Solver_Astar solver = new RMIT_15_Puzzle_Solver_Astar();
 
-        int[][] puzzle= {
+        int[][] puzzle = {
             {1, 6, 2, 0},
             {9, 5, 4, 3},
             {13, 11, 7, 8},
@@ -370,7 +370,7 @@ public class RMIT_15_Puzzle_Solver_Astar {
         };
 
         try {
-            String solution = solver.solve(puzzle);
+            String solution = solver.solve(puzzle_1);
             System.out.println("Solution: " + solution);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
