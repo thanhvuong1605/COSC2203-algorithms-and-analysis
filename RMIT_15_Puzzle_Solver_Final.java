@@ -1,8 +1,8 @@
 public class RMIT_15_Puzzle_Solver_Final {
 
-    public static final int SIZE = 4;
-    public static final int MAX_MOVES = 1_000_000;
-    public static final int[][] GOAL_STATE = {
+    public static final int SIZE = 4; // Puzzle's size is 4 rows and 4 columns
+    public static final int MAX_MOVES = 1_000_000; // Maximum path is 1 millions
+    public static final int[][] GOAL_STATE = { // Final Goal State to achieve
         {1, 2, 3, 4},
         {5, 6, 7, 8},
         {9, 10, 11, 12},
@@ -10,14 +10,14 @@ public class RMIT_15_Puzzle_Solver_Final {
     };
 
     static class State {
-        int[][] state;
-        State parent;
-        int emptyRow, emptyCol;
-        char move;
-        int g, h;
-        int depth;
+        int[][] state; // Puzzle board
+        State parent; // Previous state that creates this current state
+        int emptyRow, emptyCol; // coordinate of empty tile
+        char move; // Move ('U', 'D', 'L', 'R') to get this state
+        int g, h; // g is height from the root, h is Manhattan distance
+        int depth; // 
 
-        State(int[][] state, State parent, int emptyRow, int emptyCol, char move) {
+        State(int[][] state, State parent, int emptyRow, int emptyCol, char move) { // default constructor
             this.state = state;
             this.parent = parent;
             this.emptyRow = emptyRow;
@@ -28,14 +28,14 @@ public class RMIT_15_Puzzle_Solver_Final {
             this.depth = (parent == null) ? 0 : parent.depth + 1;
         }
 
-        boolean isGoal() {
+        boolean isGoal() { // check if this board is the GOAL board
             for (int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
-                    if (state[i][j] != GOAL_STATE[i][j]) return false;
-            return true;
+                    if (state[i][j] != GOAL_STATE[i][j]) return false; // when catch incorrect tile, return false immediately
+            return true; // already looping through the board and find no difference, so two boards are the same
         }
 
-        String getKey() {
+        String getKey() { // print out the board
             StringBuilder sb = new StringBuilder();
             for (int[] row : state)
                 for (int val : row)
@@ -43,17 +43,18 @@ public class RMIT_15_Puzzle_Solver_Final {
             return sb.toString();
         }
 
-        int f() { return g + h; }
+        int f() { return g + h; } // the smaller f is, the higher priority of this state in the queue
 
-        static int calculateManhattan(int[][] state) {
-            int dist = 0;
-            for (int i = 0; i < SIZE; i++) {
+        static int calculateManhattan(int[][] state) { // calculate Manhattan distance
+            int dist = 0; // start with distance equal 0
+            // loop through each tile in board
+            for (int i = 0; i < SIZE; i++) { 
                 for (int j = 0; j < SIZE; j++) {
-                    int val = state[i][j];
-                    if (val != 0) {
-                        int targetRow = (val - 1) / SIZE;
-                        int targetCol = (val - 1) % SIZE;
-                        dist += Math.abs(i - targetRow) + Math.abs(j - targetCol);
+                    int val = state[i][j]; 
+                    if (val != 0) { // if value in that tile is not empty
+                        int targetRow = (val - 1) / SIZE; // 
+                        int targetCol = (val - 1) % SIZE; //
+                        dist += Math.abs(i - targetRow) + Math.abs(j - targetCol); // sum of distance
                     }
                 }
             }
@@ -61,7 +62,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         }
     }
 
-    static class IntList {
+    static class IntList { 
         private int[] data;
         private int size;
 
@@ -86,7 +87,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         }
     }
 
-    static class Queue {
+    static class Queue { // Standard Queue (FIFO), used in BFS
         State[] data;
         int head, tail;
 
@@ -115,7 +116,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         boolean isEmpty() { return top == 0; }
     }
 
-    static class PriorityQueue {
+    static class PriorityQueue { // Min-Heap in shape of tree (A*), when adding new State, sort it too 
         State[] heap;
         int size;
 
@@ -160,14 +161,14 @@ public class RMIT_15_Puzzle_Solver_Final {
             }
         }
 
-        private void swap(int i, int j) {
+        private void swap(int i, int j) { // swap two States
             State tmp = heap[i];
             heap[i] = heap[j];
             heap[j] = tmp;
         }
     }
 
-    static class HashSet {
+    static class HashSet { // store the visited states, so that we do not check it again (used for all 3 methods)
         String[] table;
 
         HashSet(int capacity) { table = new String[capacity]; }
@@ -190,7 +191,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         }
     }
 
-    private static int[][] copyState(int[][] state) {
+    private static int[][] copyState(int[][] state) { // copy board 
         int[][] newState = new int[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
@@ -198,7 +199,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         return newState;
     }
 
-    private static String buildPath(State goal) {
+    private static String buildPath(State goal) { // String created from combining all the moves from start to current node
         StringBuilder sb = new StringBuilder();
         State n = goal;
         while (n != null && n.parent != null) {
@@ -347,13 +348,13 @@ public class RMIT_15_Puzzle_Solver_Final {
             {9, 10, 11, 12},
             {13, 0, 14, 15}
         };
-        // System.out.println("A* Solution: " + solver.solveAStar(puzzle));
-        // System.out.println("BFS Solution: " + solver.solveBFS(puzzle));
-        // System.out.println("DFS Solution: " + solver.solveDFS(puzzle));
+        System.out.println("A* Solution: " + solver.solveAStar(puzzle));
+        System.out.println("BFS Solution: " + solver.solveBFS(puzzle));
+        System.out.println("DFS Solution: " + solver.solveDFS(puzzle));
         
-        System.out.println("A* Solution: " + solver.solveAStar(puzzle_1));
-        System.out.println("BFS Solution: " + solver.solveBFS(puzzle_1));
-        System.out.println("DFS Solution: " + solver.solveDFS(puzzle_1));
+        // System.out.println("A* Solution: " + solver.solveAStar(puzzle_1));
+        // System.out.println("BFS Solution: " + solver.solveBFS(puzzle_1));
+        // System.out.println("DFS Solution: " + solver.solveDFS(puzzle_1));
         
     }
 }
