@@ -9,7 +9,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         {13, 14, 15, 0}
     };
 
-    static class State {
+    static class State { // Node, used in A* method
         int[][] state; // Puzzle board
         State parent; // Previous state that creates this current state
         int emptyRow, emptyCol; // coordinate of empty tile
@@ -17,7 +17,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         int g, h; // g is height from the root, h is Manhattan distance
         int depth; // 
 
-        State(int[][] state, State parent, int emptyRow, int emptyCol, char move) { // default constructor
+        State(int[][] state, State parent, int emptyRow, int emptyCol, char move) { // default constructors
             this.state = state;
             this.parent = parent;
             this.emptyRow = emptyRow;
@@ -35,7 +35,7 @@ public class RMIT_15_Puzzle_Solver_Final {
             return true; // already looping through the board and find no difference, so two boards are the same
         }
 
-        String getKey() { // print out the board
+        String getKey() { // create key (String) for State by writing the every tile in one line, separated by comma
             StringBuilder sb = new StringBuilder();
             for (int[] row : state)
                 for (int val : row)
@@ -43,17 +43,17 @@ public class RMIT_15_Puzzle_Solver_Final {
             return sb.toString();
         }
 
-        int f() { return g + h; } // the smaller f is, the higher priority of this state in the queue
+        int f() { return g + h; } // the smaller f(int) is, the higher priority of state in the queue
 
-        static int calculateManhattan(int[][] state) { // calculate Manhattan distance
+        static int calculateManhattan(int[][] state) { // calculate Manhattan distance, empty tile is not included
             int dist = 0; // start with distance equal 0
             // loop through each tile in board
             for (int i = 0; i < SIZE; i++) { 
                 for (int j = 0; j < SIZE; j++) {
                     int val = state[i][j]; 
                     if (val != 0) { // if value in that tile is not empty
-                        int targetRow = (val - 1) / SIZE; // 
-                        int targetCol = (val - 1) % SIZE; //
+                        int targetRow = (val - 1) / SIZE; 
+                        int targetCol = (val - 1) % SIZE;
                         dist += Math.abs(i - targetRow) + Math.abs(j - targetCol); // sum of distance
                     }
                 }
@@ -62,61 +62,61 @@ public class RMIT_15_Puzzle_Solver_Final {
         }
     }
 
-    static class IntList { 
+    static class IntList { // Integer Array to store all tile's value, used in function isSolvable()
         private int[] data;
         private int size;
 
-        public IntList(int capacity) {
+        public IntList(int capacity) { // default constructor
             data = new int[capacity];
             size = 0;
         }
 
-        public void add(int value) {
-            if (size >= data.length) grow();
-            data[size++] = value;
+        public void add(int value) { // add new values
+            if (size >= data.length) grow(); // when current array's size excceeds, increase array's size 2 times
+            data[size++] = value; // allocate new value at the size-th index, then increase the size variables
         }
 
-        public int get(int index) { return data[index]; }
+        public int get(int index) { return data[index]; } // get value at index location
 
-        public int size() { return size; }
+        public int size() { return size; } // get the current size
 
-        private void grow() {
-            int[] newData = new int[data.length * 2];
-            for (int i = 0; i < data.length; i++) newData[i] = data[i];
-            data = newData;
+        private void grow() { // increase the array's size by 2 times
+            int[] newData = new int[data.length * 2]; // assign new array with size is larger 2 times than the current array's size
+            for (int i = 0; i < data.length; i++) newData[i] = data[i]; // copy every element from old array to new array
+            data = newData; // pointing to new array
         }
     }
 
-    static class Queue { // Standard Queue (FIFO), used in BFS
-        State[] data;
-        int head, tail;
+    static class Queue { // Standard Queue (FIFO) (Array), used in BFS
+        State[] data; // State array
+        int head, tail; // pointers to the head node and tail node
 
-        Queue(int capacity) {
+        Queue(int capacity) { // default constructor of Queue class  
             data = new State[capacity];
             head = 0;
             tail = 0;
         }
 
-        void enqueue(State node) { data[tail++] = node; }
-        State dequeue() { return data[head++]; }
-        boolean isEmpty() { return head == tail; }
+        void enqueue(State node) { data[tail++] = node; } // add new node at the end of the line, then increase the tail value
+        State dequeue() { return data[head++]; } // return the head node's value, then increase the head value
+        boolean isEmpty() { return head == tail; } // queue is empty if head catches tail
     }
 
-    static class Stack {
-        State[] data;
-        int top;
+    static class Stack { // Standard Stack (LIFO) (Array), used in DFS approach
+        State[] data; // State array
+        int top; // pointer to top node
 
-        Stack(int capacity) {
+        Stack(int capacity) { // default constructor of Stack class
             data = new State[capacity];
             top = 0;
         }
 
-        void push(State node) { data[top++] = node; }
-        State pop() { return data[--top]; }
-        boolean isEmpty() { return top == 0; }
+        void push(State node) { data[top++] = node; } // add new element to stack by putting it in the top of line
+        State pop() { return data[--top]; } // remove the top, then decrease the pointer 
+        boolean isEmpty() { return top == 0; } // Stack is empty if top is 0
     }
 
-    static class PriorityQueue { // Min-Heap in shape of tree (A*), when adding new State, sort it too 
+    static class PriorityQueue { // Priority Queue (Min-Heap Array), used in the A* method.
         State[] heap;
         int size;
 
@@ -125,13 +125,13 @@ public class RMIT_15_Puzzle_Solver_Final {
             size = 0;
         }
 
-        void add(State node) {
-            heap[size] = node;
-            siftUp(size);
+        void add(State node) { // add new node
+            heap[size] = node; 
+            siftUp(size); // ensure the lower f is always shifted up.
             size++;
         }
 
-        State poll() {
+        State poll() { // remove and return the node at the front of the queue
             State res = heap[0];
             heap[0] = heap[--size];
             siftDown(0);
@@ -140,7 +140,7 @@ public class RMIT_15_Puzzle_Solver_Final {
 
         boolean isEmpty() { return size == 0; }
 
-        private void siftUp(int i) {
+        private void siftUp(int i) { // move the lower f to the top 
             while (i > 0) {
                 int p = (i - 1) / 2;
                 if (heap[i].f() >= heap[p].f()) break;
@@ -149,7 +149,7 @@ public class RMIT_15_Puzzle_Solver_Final {
             }
         }
 
-        private void siftDown(int i) {
+        private void siftDown(int i) { // move the higher f to the bottom
             while (2 * i + 1 < size) {
                 int left = 2 * i + 1;
                 int right = left + 1;
@@ -168,23 +168,23 @@ public class RMIT_15_Puzzle_Solver_Final {
         }
     }
 
-    static class HashSet { // store the visited states, so that we do not check it again (used for all 3 methods)
+    static class HashSet { // Hash Table (Array) store the visited states, so that we do not check it again (used for all 3 methods)
         String[] table;
 
         HashSet(int capacity) { table = new String[capacity]; }
 
-        int hash(String key) { return Math.abs(key.hashCode()) % table.length; }
+        int hash(String key) { return Math.abs(key.hashCode()) % table.length; } // return index
 
-        boolean contains(String key) {
+        boolean contains(String key) { // check if the hash Table contains the element  already 
             int idx = hash(key);
-            while (table[idx] != null) {
+            while (table[idx] != null) { 
                 if (table[idx].equals(key)) return true;
                 idx = (idx + 1) % table.length;
             }
             return false;
         }
 
-        void add(String key) {
+        void add(String key) { // add new element 
             int idx = hash(key);
             while (table[idx] != null) idx = (idx + 1) % table.length;
             table[idx] = key;
@@ -199,15 +199,15 @@ public class RMIT_15_Puzzle_Solver_Final {
         return newState;
     }
 
-    private static String buildPath(State goal) { // String created from combining all the moves from start to current node
+    private static String buildPath(State goal) { // Path (String type) created from combining all the moves from start to current node
         StringBuilder sb = new StringBuilder();
-        State n = goal;
+        State n = goal; 
         while (n != null && n.parent != null) {
-            sb.append(n.move);
+            sb.append(n.move);  
             n = n.parent;
-            if (sb.length() > MAX_MOVES) throw new RuntimeException("Move sequence too long");
+            if (sb.length() > MAX_MOVES) throw new RuntimeException("Move sequence too long"); // if longer than 1 million moves, raise error
         }
-        return sb.reverse().toString();
+        return sb.reverse().toString(); // reverse the string, because it is appended from current node to start
     }
 
     public String solveBFS(int[][] puzzle) {
