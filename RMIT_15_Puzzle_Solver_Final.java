@@ -219,7 +219,7 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; } 
 
-        Queue queue = new Queue(1000000); // store unexplored states
+        Queue queue = new Queue(1000000); // store unexplored states (FIFO)
         HashSet visited = new HashSet(1000000); // store explored states
         queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by enqueuing original state to queue
 
@@ -255,85 +255,90 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        Stack stack = new Stack(1000000); // use Stack to store unexplored states
-        HashSet visited = new HashSet(1000000); // 
-        stack.push(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by pushing original puzzle
+        Stack stack = new Stack(1000000); // use Stack to store unexplored states (LIFO)
+        HashSet visited = new HashSet(1000000); // use Hash Table to store explored states
+        stack.push(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by pushing original puzzle first
 
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // new changes in U, D, L, R
         char[] moves = {'U', 'D', 'L', 'R'};
 
-        while (!stack.isEmpty()) {
-            State curr = stack.pop();
-            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves");
-            if (visited.contains(curr.getKey())) continue;
-            visited.add(curr.getKey());
-            if (curr.isGoal()) return buildPath(curr);
+        while (!stack.isEmpty()) { // loop until stack is empty
+            State curr = stack.pop(); // pop the last element
+            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // if move over 1 million, raise error
+            if (visited.contains(curr.getKey())) continue; // if current state is already visited, skip to next state
+            visited.add(curr.getKey()); // add current state to visited set 
+            if (curr.isGoal()) return buildPath(curr); // if find goal state, return path and end
 
-            // generate new states in 4 directions; then push them into stack. The order is U, D, L, R 
+            // generate 4 new states in 4 directions; then push them into stack. The order is U, D, L, R 
             for (int d = 0; d < 4; d++) {
-                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1]; // new coordinate of empty tile
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
                 int[][] newState = copyState(curr.state);
                 newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
                 newState[nr][nc] = 0;
-                stack.push(new State(newState, curr, nr, nc, moves[d]));
+                stack.push(new State(newState, curr, nr, nc, moves[d])); // push new state into stack to explore next time
             }
         }
         return "NO_SOLUTION";
     }
 
     public String solveAStar(int[][] puzzle) { // A* method
-        if (!isSolvable(puzzle)) return "UNSOLVABLE";
+        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
 
+        // find the coordinate of the empty tile
         int emptyR = -1, emptyC = -1;
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        PriorityQueue heap = new PriorityQueue(1000000);
-        HashSet visited = new HashSet(1000000);
-        heap.add(new State(puzzle, null, emptyR, emptyC, 'S'));
+        PriorityQueue heap = new PriorityQueue(1000000); // use Priority Queue to store unexplored states
+        HashSet visited = new HashSet(1000000); // use Hash Table to store explored states
+        heap.add(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process 
 
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // new changes in U, D, L, R
         char[] moves = {'U', 'D', 'L', 'R'};
 
         while (!heap.isEmpty()) {
             State curr = heap.poll();
-            if (curr.g > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves");
-            if (visited.contains(curr.getKey())) continue;
-            visited.add(curr.getKey());
-            if (curr.isGoal()) return buildPath(curr);
+            if (curr.g > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // if move over 1 million, raise error
+            if (visited.contains(curr.getKey())) continue; // if current state is already visited, skip to next state
+            visited.add(curr.getKey()); // add current state to visited set
+            if (curr.isGoal()) return buildPath(curr); // if find goal state, return path and end
 
+            // generate 4 new states in 4 directions; then push them into stack. The order is U, D, L, R 
             for (int d = 0; d < 4; d++) {
                 int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
                 int[][] newState = copyState(curr.state);
                 newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
                 newState[nr][nc] = 0;
-                heap.add(new State(newState, curr, nr, nc, moves[d]));
+                heap.add(new State(newState, curr, nr, nc, moves[d])); // add new state into heap to explore next time
             }
         }
         return "NO_SOLUTION";
     }
 
     public static boolean isSolvable(int[][] state) {
+        // write out the 15-puzzle board in one line, reading left-to-right, top-to-bottom
         IntList flat = new IntList(16);
         for (int[] row : state)
             for (int val : row)
                 if (val != 0) flat.add(val);
 
+        // calculate the inversion
         int inversions = 0;
         for (int i = 0; i < flat.size(); i++)
             for (int j = i + 1; j < flat.size(); j++)
                 if (flat.get(i) > flat.get(j)) inversions++;
 
+        // find the row index containing zero tile
         int emptyRow = -1;
         for (int i = 0; i < SIZE && emptyRow == -1; i++)
             for (int j = 0; j < SIZE; j++)
                 if (state[i][j] == 0) emptyRow = i;
 
-        int taxicab = Math.abs(emptyRow - 3);
-        return (inversions + taxicab) % 2 == 0;
+        int taxicab = Math.abs(emptyRow - 3); // absolute difference between the blank tile's row (emptyRow) and the target row
+        return (inversions + taxicab) % 2 == 0; // puzzle is solvable  if the sum of the inversions and the row distance from the goal row is even
     }
 
     public static void main(String[] args) {
