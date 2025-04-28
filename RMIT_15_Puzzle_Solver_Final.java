@@ -171,11 +171,11 @@ public class RMIT_15_Puzzle_Solver_Final {
     static class HashSet { // Hash Table (Array) store the visited states, so that we do not check it again (used for all 3 methods)
         String[] table;
 
-        HashSet(int capacity) { table = new String[capacity]; }
+        HashSet(int capacity) { table = new String[capacity]; } // default constructor for Hashset
 
         int hash(String key) { return Math.abs(key.hashCode()) % table.length; } // return index
 
-        boolean contains(String key) { // check if the hash Table contains the element  already 
+        boolean contains(String key) { // check if the hash Table contains the elements already 
             int idx = hash(key);
             while (table[idx] != null) { 
                 if (table[idx].equals(key)) return true;
@@ -184,10 +184,10 @@ public class RMIT_15_Puzzle_Solver_Final {
             return false;
         }
 
-        void add(String key) { // add new element 
+        void add(String key) { // add new element (Open Address Hashing - Linear Probing)
             int idx = hash(key);
-            while (table[idx] != null) idx = (idx + 1) % table.length;
-            table[idx] = key;
+            while (table[idx] != null) idx = (idx + 1) % table.length; // if the current index is occupied, move to next index
+            table[idx] = key; // allocate element to array
         }
     }
 
@@ -199,7 +199,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         return newState;
     }
 
-    private static String buildPath(State goal) { // Path (String type) created from combining all the moves from start to current node
+    private static String buildPath(State goal) { // Path (String) created from combining all the moves from start to current node
         StringBuilder sb = new StringBuilder();
         State n = goal; 
         while (n != null && n.parent != null) {
@@ -210,51 +210,54 @@ public class RMIT_15_Puzzle_Solver_Final {
         return sb.reverse().toString(); // reverse the string, because it is appended from current node to start
     }
 
-    public String solveBFS(int[][] puzzle) {
-        if (!isSolvable(puzzle)) return "UNSOLVABLE";
+    public String solveBFS(int[][] puzzle) { // BFS method
+        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
 
+        // find the coordinate of the empty tile
         int emptyR = -1, emptyC = -1;
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
-                if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
+                if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; } 
 
-        Queue queue = new Queue(1000000);
-        HashSet visited = new HashSet(1000000);
-        queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S'));
+        Queue queue = new Queue(1000000); // store unexplored states
+        HashSet visited = new HashSet(1000000); // store explored states
+        queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by enqueuing original state to queue
 
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // changes in coordinates (x, y) when moving Up, Down, Left, Right, respectively.
         char[] moves = {'U', 'D', 'L', 'R'};
 
-        while (!queue.isEmpty()) {
-            State curr = queue.dequeue();
-            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves");
-            if (visited.contains(curr.getKey())) continue;
-            visited.add(curr.getKey());
-            if (curr.isGoal()) return buildPath(curr);
+        while (!queue.isEmpty()) { // continue until no elements left in queue
+            State curr = queue.dequeue(); // dequeue the first element
+            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // continously checking if move is larger than 1 million
+            if (visited.contains(curr.getKey())) continue; // if current state is in visited set, which is already explored, ignore it 
+            visited.add(curr.getKey()); // if it is not, add to visited set
+            if (curr.isGoal()) return buildPath(curr); // compare with Goal state, if yes, return path and end
 
+            // generate 4 new states in 4 directions: U, D, L, R; then add them to queue
             for (int d = 0; d < 4; d++) {
-                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
-                int[][] newState = copyState(curr.state);
+                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1]; // new coordinate of empty tile
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
+                int[][] newState = copyState(curr.state); 
                 newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
                 newState[nr][nc] = 0;
-                queue.enqueue(new State(newState, curr, nr, nc, moves[d]));
+                queue.enqueue(new State(newState, curr, nr, nc, moves[d])); // enqueue new state into queue to explore next time 
             }
         }
         return "NO_SOLUTION";
     }
 
-    public String solveDFS(int[][] puzzle) {
-        if (!isSolvable(puzzle)) return "UNSOLVABLE";
+    public String solveDFS(int[][] puzzle) { // DFS method
+        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
 
+        // find the coordinate of the empty tile
         int emptyR = -1, emptyC = -1;
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        Stack stack = new Stack(1000000);
-        HashSet visited = new HashSet(1000000);
-        stack.push(new State(puzzle, null, emptyR, emptyC, 'S'));
+        Stack stack = new Stack(1000000); // use Stack to store unexplored states
+        HashSet visited = new HashSet(1000000); // 
+        stack.push(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by pushing original puzzle
 
         int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
         char[] moves = {'U', 'D', 'L', 'R'};
@@ -266,6 +269,7 @@ public class RMIT_15_Puzzle_Solver_Final {
             visited.add(curr.getKey());
             if (curr.isGoal()) return buildPath(curr);
 
+            // generate new states in 4 directions; then push them into stack. The order is U, D, L, R 
             for (int d = 0; d < 4; d++) {
                 int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
                 if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
@@ -278,7 +282,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         return "NO_SOLUTION";
     }
 
-    public String solveAStar(int[][] puzzle) {
+    public String solveAStar(int[][] puzzle) { // A* method
         if (!isSolvable(puzzle)) return "UNSOLVABLE";
 
         int emptyR = -1, emptyC = -1;
