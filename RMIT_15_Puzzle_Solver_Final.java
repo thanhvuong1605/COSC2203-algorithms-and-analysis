@@ -277,9 +277,11 @@ public class RMIT_15_Puzzle_Solver_Final {
         int length = 0;
         State n = goal;
         
-        while (n != null) {
+        // Skip the initial 'S' move
+        while (n != null && n.parent != null) {
             path[length++] = n.move;
             n = n.parent;
+            if (length > MAX_MOVES) throw new RuntimeException("Move sequence too long");
         }
         
         // Reverse the path
