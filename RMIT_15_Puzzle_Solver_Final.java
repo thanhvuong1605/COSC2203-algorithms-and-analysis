@@ -516,8 +516,8 @@ public class RMIT_15_Puzzle_Solver_Final {
         };
 
         // Test all puzzles
-        int[][][] puzzles = {puzzle, puzzle_1, puzzle_2, puzzle_3, puzzle_4};
-        String[] names = {"Original", "Puzzle 1", "Easy", "Medium", "Hard"};
+        int[][][] puzzles = { puzzle_2, puzzle_3, puzzle_4};
+        String[] names = { "Easy", "Medium", "Hard"};
 
         for (int i = 0; i < puzzles.length; i++) {
             System.out.println("\nTesting " + names[i] + " Puzzle:");
