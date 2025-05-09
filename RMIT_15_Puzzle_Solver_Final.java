@@ -35,12 +35,55 @@ public class RMIT_15_Puzzle_Solver_Final {
             return true; // already looping through the board and find no difference, so two boards are the same
         }
 
-        String getKey() { // create key (String) for State by writing the every tile in one line, separated by comma
-            StringBuilder sb = new StringBuilder();
-            for (int[] row : state)
-                for (int val : row)
-                    sb.append(val).append(',');
-            return sb.toString();
+        // String getKey() { // create key (String) for State by writing the every tile in one line, separated by comma
+        //     StringBuilder sb = new StringBuilder();
+        //     for (int[] row : state)
+        //         for (int val : row)
+        //             sb.append(val).append(',');
+        //     return sb.toString();
+        // }
+
+        String getKey() {
+            // Calculate total length needed
+            int totalLength = 0;
+            for (int[] row : state) {
+                for (int val : row) {
+                    // Count digits in number
+                    int temp = val;
+                    do {
+                        totalLength++;
+                        temp /= 10;
+                    } while (temp > 0);
+                    totalLength++; // For comma
+                }
+            }
+            
+            char[] result = new char[totalLength];
+            int pos = 0;
+            
+            for (int[] row : state) {
+                for (int val : row) {
+                    // Convert number to string manually
+                    if (val == 0) {
+                        result[pos++] = '0';
+                    } else {
+                        int temp = val;
+                        int digits = 0;
+                        while (temp > 0) {
+                            temp /= 10;
+                            digits++;
+                        }
+                        temp = val;
+                        for (int i = digits - 1; i >= 0; i--) {
+                            result[pos + i] = (char)('0' + (temp % 10));
+                            temp /= 10;
+                        }
+                        pos += digits;
+                    }
+                    result[pos++] = ',';
+                }
+            }
+            return new String(result, 0, pos);
         }
 
         int f() { return g + h; } // the smaller f(int) is, the higher priority of state in the queue
@@ -54,7 +97,7 @@ public class RMIT_15_Puzzle_Solver_Final {
                     if (val != 0) { // if value in that tile is not empty
                         int targetRow = (val - 1) / SIZE; 
                         int targetCol = (val - 1) % SIZE;
-                        dist += Math.abs(i - targetRow) + Math.abs(j - targetCol); // sum of distance
+                        dist += customAbs(i - targetRow) + customAbs(j - targetCol); // sum of distance
                     }
                 }
             }
@@ -173,12 +216,31 @@ public class RMIT_15_Puzzle_Solver_Final {
 
         HashSet(int capacity) { table = new String[capacity]; } // default constructor for Hashset
 
-        int hash(String key) { return Math.abs(key.hashCode()) % table.length; } // return index
+        // int hash(String key) { return Math.abs(key.hashCode()) % table.length; } // return index
+
+        // Custom hash function to replace String.hashCode()
+        private int customHash(String key) {
+            int hash = 0;
+            for (int i = 0; i < key.length(); i++) {
+                hash = (hash * 31 + key.charAt(i)) % table.length;
+            }
+            return hash;
+        }
+
+        int hash(String key) { return customHash(key); }
+
+        private boolean customEquals(String s1, String s2) {
+            if (s1.length() != s2.length()) return false;
+            for (int i = 0; i < s1.length(); i++) {
+                if (s1.charAt(i) != s2.charAt(i)) return false;
+            }
+            return true;
+        }
 
         boolean contains(String key) { // check if the hash Table contains the elements already 
             int idx = hash(key);
             while (table[idx] != null) { 
-                if (table[idx].equals(key)) return true;
+                if (customEquals(table[idx], key)) return true;
                 idx = (idx + 1) % table.length;
             }
             return false;
@@ -199,15 +261,39 @@ public class RMIT_15_Puzzle_Solver_Final {
         return newState;
     }
 
-    private static String buildPath(State goal) { // Path (String) created from combining all the moves from start to current node
-        StringBuilder sb = new StringBuilder();
-        State n = goal; 
-        while (n != null && n.parent != null) {
-            sb.append(n.move);  
+    // private static String buildPath(State goal) { // Path (String) created from combining all the moves from start to current node
+    //     StringBuilder sb = new StringBuilder();
+    //     State n = goal; 
+    //     while (n != null && n.parent != null) {
+    //         sb.append(n.move);  
+    //         n = n.parent;
+    //         if (sb.length() > MAX_MOVES) throw new RuntimeException("Move sequence too long"); // if longer than 1 million moves, raise error
+    //     }
+    //     return sb.reverse().toString(); // reverse the string, because it is appended from current node to start
+    // }
+
+    private static String buildPath(State goal) {
+        char[] path = new char[MAX_MOVES];
+        int length = 0;
+        State n = goal;
+        
+        while (n != null) {
+            path[length++] = n.move;
             n = n.parent;
-            if (sb.length() > MAX_MOVES) throw new RuntimeException("Move sequence too long"); // if longer than 1 million moves, raise error
         }
-        return sb.reverse().toString(); // reverse the string, because it is appended from current node to start
+        
+        // Reverse the path
+        for (int i = 0; i < length / 2; i++) {
+            char temp = path[i];
+            path[i] = path[length - 1 - i];
+            path[length - 1 - i] = temp;
+        }
+        
+        return new String(path, 0, length);
+    }
+
+    private static int customAbs(int x) {
+        return (x < 0) ? -x : x;
     }
 
     public String solveBFS(int[][] puzzle) { // BFS method
@@ -337,7 +423,7 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (state[i][j] == 0) emptyRow = i;
 
-        int taxicab = Math.abs(emptyRow - 3); // absolute difference between the blank tile's row (emptyRow) and the target row
+        int taxicab = customAbs(emptyRow - 3); // absolute difference between the blank tile's row (emptyRow) and the target row
         return (inversions + taxicab) % 2 == 0; // puzzle is solvable  if the sum of the inversions and the row distance from the goal row is even
     }
 
@@ -357,13 +443,16 @@ public class RMIT_15_Puzzle_Solver_Final {
             {9, 10, 11, 12},
             {13, 0, 14, 15}
         };
+
+        System.out.println("A* Solution: " + solver.solveAStar(puzzle_1));
+        System.out.println("BFS Solution: " + solver.solveBFS(puzzle_1));
+        System.out.println("DFS Solution: " + solver.solveDFS(puzzle_1));
+
         System.out.println("A* Solution: " + solver.solveAStar(puzzle));
         System.out.println("BFS Solution: " + solver.solveBFS(puzzle));
         System.out.println("DFS Solution: " + solver.solveDFS(puzzle));
         
-        // System.out.println("A* Solution: " + solver.solveAStar(puzzle_1));
-        // System.out.println("BFS Solution: " + solver.solveBFS(puzzle_1));
-        // System.out.println("DFS Solution: " + solver.solveDFS(puzzle_1));
+        
         
     }
 }
