@@ -298,112 +298,157 @@ public class RMIT_15_Puzzle_Solver_Final {
         return (x < 0) ? -x : x;
     }
 
-    public String solveBFS(int[][] puzzle) { // BFS method
-        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
+    public String solveBFS(int[][] puzzle) {
+        if (!isSolvable(puzzle)) return "UNSOLVABLE";
 
-        // find the coordinate of the empty tile
-        int emptyR = -1, emptyC = -1;
-        for (int i = 0; i < SIZE; i++)
-            for (int j = 0; j < SIZE; j++)
-                if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; } 
+        long startTime = System.currentTimeMillis();
+        int exploredStates = 0;
 
-        Queue queue = new Queue(1000000); // store unexplored states (FIFO)
-        HashSet visited = new HashSet(1000000); // store explored states
-        queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by enqueuing original state to queue
-
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // changes in coordinates (x, y) when moving Up, Down, Left, Right, respectively.
-        char[] moves = {'U', 'D', 'L', 'R'};
-
-        while (!queue.isEmpty()) { // continue until no elements left in queue
-            State curr = queue.dequeue(); // dequeue the first element
-            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // continously checking if move is larger than 1 million
-            if (visited.contains(curr.getKey())) continue; // if current state is in visited set, which is already explored, ignore it 
-            visited.add(curr.getKey()); // if it is not, add to visited set
-            if (curr.isGoal()) return buildPath(curr); // compare with Goal state, if yes, return path and end
-
-            // generate 4 new states in 4 directions: U, D, L, R; then add them to queue
-            for (int d = 0; d < 4; d++) {
-                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1]; // new coordinate of empty tile
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
-                int[][] newState = copyState(curr.state); 
-                newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
-                newState[nr][nc] = 0;
-                queue.enqueue(new State(newState, curr, nr, nc, moves[d])); // enqueue new state into queue to explore next time 
-            }
-        }
-        return "NO_SOLUTION";
-    }
-
-    public String solveDFS(int[][] puzzle) { // DFS method
-        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
-
-        // find the coordinate of the empty tile
         int emptyR = -1, emptyC = -1;
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        Stack stack = new Stack(1000000); // use Stack to store unexplored states (LIFO)
-        HashSet visited = new HashSet(1000000); // use Hash Table to store explored states
-        stack.push(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process by pushing original puzzle first
+        Queue queue = new Queue(1000000);
+        HashSet visited = new HashSet(1000000);
+        queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S'));
 
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // new changes in U, D, L, R
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
         char[] moves = {'U', 'D', 'L', 'R'};
 
-        while (!stack.isEmpty()) { // loop until stack is empty
-            State curr = stack.pop(); // pop the last element
-            if (curr.depth > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // if move over 1 million, raise error
-            if (visited.contains(curr.getKey())) continue; // if current state is already visited, skip to next state
-            visited.add(curr.getKey()); // add current state to visited set 
-            if (curr.isGoal()) return buildPath(curr); // if find goal state, return path and end
+        while (!queue.isEmpty()) {
+            State curr = queue.dequeue();
+            exploredStates++;
+            
+            if (curr.depth > MAX_MOVES) {
+                long endTime = System.currentTimeMillis();
+                return String.format("TIME_LIMIT_EXCEEDED (%.2f ms, %d states explored, moves: 0)", 
+                    (endTime - startTime) / 1000.0, exploredStates);
+            }
+            
+            if (visited.contains(curr.getKey())) continue;
+            visited.add(curr.getKey());
+            if (curr.isGoal()) {
+                String path = buildPath(curr);
+                long endTime = System.currentTimeMillis();
+                return String.format("%s (%.2f ms, %d states explored, moves: %d)", 
+                    path, (endTime - startTime) / 1000.0, exploredStates, path.length());
+            }
 
-            // generate 4 new states in 4 directions; then push them into stack. The order is U, D, L, R 
             for (int d = 0; d < 4; d++) {
-                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1]; // new coordinate of empty tile
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
+                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
                 int[][] newState = copyState(curr.state);
                 newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
                 newState[nr][nc] = 0;
-                stack.push(new State(newState, curr, nr, nc, moves[d])); // push new state into stack to explore next time
+                queue.enqueue(new State(newState, curr, nr, nc, moves[d]));
             }
         }
-        return "NO_SOLUTION";
+        long endTime = System.currentTimeMillis();
+        return String.format("NO_SOLUTION (%.2f ms, %d states explored, moves: 0)", 
+            (endTime - startTime) / 1000.0, exploredStates);
     }
 
-    public String solveAStar(int[][] puzzle) { // A* method
-        if (!isSolvable(puzzle)) return "UNSOLVABLE"; // check if puzzle is solvable or not
+    public String solveDFS(int[][] puzzle) {
+        if (!isSolvable(puzzle)) return "UNSOLVABLE";
 
-        // find the coordinate of the empty tile
+        long startTime = System.currentTimeMillis();
+        int exploredStates = 0;
+
         int emptyR = -1, emptyC = -1;
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        PriorityQueue heap = new PriorityQueue(1000000); // use Priority Queue to store unexplored states
-        HashSet visited = new HashSet(1000000); // use Hash Table to store explored states
-        heap.add(new State(puzzle, null, emptyR, emptyC, 'S')); // start the process 
+        Stack stack = new Stack(1000000);
+        HashSet visited = new HashSet(1000000);
+        stack.push(new State(puzzle, null, emptyR, emptyC, 'S'));
 
-        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // new changes in U, D, L, R
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        char[] moves = {'U', 'D', 'L', 'R'};
+
+        while (!stack.isEmpty()) {
+            State curr = stack.pop();
+            exploredStates++;
+            
+            if (curr.depth > MAX_MOVES) {
+                long endTime = System.currentTimeMillis();
+                return String.format("TIME_LIMIT_EXCEEDED (%.2f ms, %d states explored, moves: 0)", 
+                    (endTime - startTime) / 1000.0, exploredStates);
+            }
+            
+            if (visited.contains(curr.getKey())) continue;
+            visited.add(curr.getKey());
+            if (curr.isGoal()) {
+                String path = buildPath(curr);
+                long endTime = System.currentTimeMillis();
+                return String.format("%s (%.2f ms, %d states explored, moves: %d)", 
+                    path, (endTime - startTime) / 1000.0, exploredStates, path.length());
+            }
+
+            for (int d = 0; d < 4; d++) {
+                int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+                int[][] newState = copyState(curr.state);
+                newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
+                newState[nr][nc] = 0;
+                stack.push(new State(newState, curr, nr, nc, moves[d]));
+            }
+        }
+        long endTime = System.currentTimeMillis();
+        return String.format("NO_SOLUTION (%.2f ms, %d states explored, moves: 0)", 
+            (endTime - startTime) / 1000.0, exploredStates);
+    }
+
+    public String solveAStar(int[][] puzzle) {
+        if (!isSolvable(puzzle)) return "UNSOLVABLE";
+
+        long startTime = System.currentTimeMillis();
+        int exploredStates = 0;
+
+        int emptyR = -1, emptyC = -1;
+        for (int i = 0; i < SIZE; i++)
+            for (int j = 0; j < SIZE; j++)
+                if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
+
+        PriorityQueue heap = new PriorityQueue(1000000);
+        HashSet visited = new HashSet(1000000);
+        heap.add(new State(puzzle, null, emptyR, emptyC, 'S'));
+
+        int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
         char[] moves = {'U', 'D', 'L', 'R'};
 
         while (!heap.isEmpty()) {
             State curr = heap.poll();
-            if (curr.g > MAX_MOVES) throw new RuntimeException("Move sequence exceeds 1,000,000 moves"); // if move over 1 million, raise error
-            if (visited.contains(curr.getKey())) continue; // if current state is already visited, skip to next state
-            visited.add(curr.getKey()); // add current state to visited set
-            if (curr.isGoal()) return buildPath(curr); // if find goal state, return path and end
+            exploredStates++;
+            
+            if (curr.g > MAX_MOVES) {
+                long endTime = System.currentTimeMillis();
+                return String.format("TIME_LIMIT_EXCEEDED (%.2f ms, %d states explored, moves: 0)", 
+                    (endTime - startTime) / 1000.0, exploredStates);
+            }
+            
+            if (visited.contains(curr.getKey())) continue;
+            visited.add(curr.getKey());
+            if (curr.isGoal()) {
+                String path = buildPath(curr);
+                long endTime = System.currentTimeMillis();
+                return String.format("%s (%.2f ms, %d states explored, moves: %d)", 
+                    path, (endTime - startTime) / 1000.0, exploredStates, path.length());
+            }
 
-            // generate 4 new states in 4 directions; then push them into stack. The order is U, D, L, R 
             for (int d = 0; d < 4; d++) {
                 int nr = curr.emptyRow + dir[d][0], nc = curr.emptyCol + dir[d][1];
-                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue; // if new coordinate of empty tile is invalid (outside puzzle), ignore this state
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
                 int[][] newState = copyState(curr.state);
                 newState[curr.emptyRow][curr.emptyCol] = newState[nr][nc];
                 newState[nr][nc] = 0;
-                heap.add(new State(newState, curr, nr, nc, moves[d])); // add new state into heap to explore next time
+                heap.add(new State(newState, curr, nr, nc, moves[d]));
             }
         }
-        return "NO_SOLUTION";
+        long endTime = System.currentTimeMillis();
+        return String.format("NO_SOLUTION (%.2f ms, %d states explored, moves: 0)", 
+            (endTime - startTime) / 1000.0, exploredStates);
     }
 
     public static boolean isSolvable(int[][] state) {
@@ -432,29 +477,53 @@ public class RMIT_15_Puzzle_Solver_Final {
     public static void main(String[] args) {
         RMIT_15_Puzzle_Solver_Final solver = new RMIT_15_Puzzle_Solver_Final();
 
-        int[][] puzzle = {
+        int[][] puzzle_1 = {
             {1, 6, 2, 0},
             {9, 5, 4, 3},
             {13, 11, 7, 8},
             {14, 10, 15, 12}
         };
 
-        int[][] puzzle_1 = {
+        int[][] puzzle = {
             {1, 2, 3, 4},
             {5, 6, 7, 8},
             {9, 10, 11, 12},
             {13, 0, 14, 15}
         };
 
-        System.out.println("A* Solution: " + solver.solveAStar(puzzle_1));
-        System.out.println("BFS Solution: " + solver.solveBFS(puzzle_1));
-        System.out.println("DFS Solution: " + solver.solveDFS(puzzle_1));
+        //easy puzzle
+        int[][] puzzle_2 = {
+            {1, 2, 3, 4},
+            {5, 6, 7, 8},
+            {9, 0, 11, 12},
+            {13, 10, 14, 15}
+        };
 
-        System.out.println("A* Solution: " + solver.solveAStar(puzzle));
-        System.out.println("BFS Solution: " + solver.solveBFS(puzzle));
-        System.out.println("DFS Solution: " + solver.solveDFS(puzzle));
-        
-        
-        
+        //medium puzzle
+        int[][] puzzle_3 = {
+            {1, 3, 4, 8},
+            {5, 2, 0, 7},
+            {9, 6, 11, 12},
+            {13, 10, 14, 15}
+        };
+
+        //hard puzzle
+        int[][] puzzle_4 = {
+            {1, 2, 3, 4},
+            {5, 6, 8, 10},
+            {7, 15, 0, 13},
+            {14, 11, 9, 12}
+        };
+
+        // Test all puzzles
+        int[][][] puzzles = {puzzle, puzzle_1, puzzle_2, puzzle_3, puzzle_4};
+        String[] names = {"Original", "Puzzle 1", "Easy", "Medium", "Hard"};
+
+        for (int i = 0; i < puzzles.length; i++) {
+            System.out.println("\nTesting " + names[i] + " Puzzle:");
+            System.out.println("A* Solution: " + solver.solveAStar(puzzles[i]));
+            System.out.println("BFS Solution: " + solver.solveBFS(puzzles[i]));
+            System.out.println("DFS Solution: " + solver.solveDFS(puzzles[i]));
+        }
     }
 }
