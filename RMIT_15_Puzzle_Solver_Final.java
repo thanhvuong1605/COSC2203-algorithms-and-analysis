@@ -35,14 +35,6 @@ public class RMIT_15_Puzzle_Solver_Final {
             return true; // already looping through the board and find no difference, so two boards are the same
         }
 
-        // String getKey() { // create key (String) for State by writing the every tile in one line, separated by comma
-        //     StringBuilder sb = new StringBuilder();
-        //     for (int[] row : state)
-        //         for (int val : row)
-        //             sb.append(val).append(',');
-        //     return sb.toString();
-        // }
-
         String getKey() {
             // Calculate total length needed
             int totalLength = 0;
@@ -260,17 +252,6 @@ public class RMIT_15_Puzzle_Solver_Final {
                 newState[i][j] = state[i][j];
         return newState;
     }
-
-    // private static String buildPath(State goal) { // Path (String) created from combining all the moves from start to current node
-    //     StringBuilder sb = new StringBuilder();
-    //     State n = goal; 
-    //     while (n != null && n.parent != null) {
-    //         sb.append(n.move);  
-    //         n = n.parent;
-    //         if (sb.length() > MAX_MOVES) throw new RuntimeException("Move sequence too long"); // if longer than 1 million moves, raise error
-    //     }
-    //     return sb.reverse().toString(); // reverse the string, because it is appended from current node to start
-    // }
 
     private static String buildPath(State goal) {
         char[] path = new char[MAX_MOVES];
