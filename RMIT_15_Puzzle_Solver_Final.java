@@ -221,14 +221,14 @@ public class RMIT_15_Puzzle_Solver_Final {
     public static void main(String[] args) {
         RMIT_15_Puzzle_Solver_Final solver = new RMIT_15_Puzzle_Solver_Final();
 
-        int[][] puzzle_1 = {
+        int[][] puzzle_test_1 = {
             {1, 6, 2, 0},
             {9, 5, 4, 3},
             {13, 11, 7, 8},
             {14, 10, 15, 12}
         };
 
-        int[][] puzzle = {
+        int[][] puzzle_test_2 = {
             {1, 2, 3, 4},
             {5, 6, 7, 8},
             {9, 10, 11, 12},
@@ -236,7 +236,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         };
 
         //easy puzzle
-        int[][] puzzle_2 = {
+        int[][] puzzle_easy = {
             {1, 2, 3, 4},
             {5, 6, 7, 8},
             {9, 0, 11, 12},
@@ -244,15 +244,15 @@ public class RMIT_15_Puzzle_Solver_Final {
         };
 
         //medium puzzle
-        int[][] puzzle_3 = {
+        int[][] puzzle_medium = {
             {1, 3, 4, 8},
             {5, 2, 0, 7},
             {9, 6, 11, 12},
-            {13, 10, 14, 15}
+            {13, 10, 14, 15}    
         };
 
         //hard puzzle
-        int[][] puzzle_4 = {
+        int[][] puzzle_hard = {
             {1, 2, 3, 4},
             {5, 6, 8, 10},
             {7, 15, 0, 13},
@@ -260,7 +260,7 @@ public class RMIT_15_Puzzle_Solver_Final {
         };
 
         // Test all puzzles
-        int[][][] puzzles = { puzzle_2, puzzle_3, puzzle_4};
+        int[][][] puzzles = { puzzle_easy, puzzle_medium, puzzle_hard};
         String[] names = { "Easy", "Medium", "Hard"};
 
         for (int i = 0; i < puzzles.length; i++) {
