@@ -53,8 +53,8 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        Queue queue = new Queue(1000000);
-        HashSet visited = new HashSet(1000000);
+        Queue queue = new Queue(10000000);
+        HashSet visited = new HashSet(10000000);
         queue.enqueue(new State(puzzle, null, emptyR, emptyC, 'S'));
 
         int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
@@ -104,8 +104,8 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        Stack stack = new Stack(1000000);
-        HashSet visited = new HashSet(1000000);
+        Stack stack = new Stack(10000000);
+        HashSet visited = new HashSet(10000000);
         stack.push(new State(puzzle, null, emptyR, emptyC, 'S'));
 
         int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
@@ -155,8 +155,8 @@ public class RMIT_15_Puzzle_Solver_Final {
             for (int j = 0; j < SIZE; j++)
                 if (puzzle[i][j] == 0) { emptyR = i; emptyC = j; }
 
-        PriorityQueue heap = new PriorityQueue(1000000);
-        HashSet visited = new HashSet(1000000);
+        PriorityQueue heap = new PriorityQueue(10000000);
+        HashSet visited = new HashSet(10000000);
         heap.add(new State(puzzle, null, emptyR, emptyC, 'S'));
 
         int[][] dir = {{1,0}, {-1,0}, {0,1}, {0,-1}};
@@ -259,9 +259,27 @@ public class RMIT_15_Puzzle_Solver_Final {
             {14, 11, 9, 12}
         };
 
+        //unsolvable puzzle
+        int[][] puzzle_unsolvable = {
+            {11, 3, 1, 7},
+            {4, 6, 8, 2},
+            {15, 9, 10, 13},
+            {14, 12, 5, 0}
+        };
+
         // Test all puzzles
-        int[][][] puzzles = { puzzle_easy, puzzle_medium, puzzle_hard};
-        String[] names = { "Easy", "Medium", "Hard"};
+        int[][][] puzzles = { 
+            puzzle_easy, 
+            puzzle_medium, 
+            puzzle_hard, 
+            puzzle_unsolvable
+        };
+        String[] names = { 
+            "Easy", 
+            "Medium", 
+            "Hard", 
+            "Unsolvable"
+        };
 
         for (int i = 0; i < puzzles.length; i++) {
             System.out.println("\nTesting " + names[i] + " Puzzle:");
